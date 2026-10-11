@@ -1,0 +1,1 @@
+Development privacy policy placeholder for local Docker testing. Replace this file with the institution-approved privacy policy before any public deployment. This file exists only to satisfy the production configuration gate in the local container workflow.

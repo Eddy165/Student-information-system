@@ -1,0 +1,17 @@
+PRAGMA foreign_keys = ON;
+CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username TEXT NOT NULL UNIQUE, password_hash TEXT NOT NULL, role TEXT NOT NULL CHECK(role IN ('admin','faculty','student')), linked_id TEXT, session_version INTEGER NOT NULL DEFAULT 0);
+CREATE TABLE IF NOT EXISTS students (id TEXT PRIMARY KEY, name TEXT NOT NULL, department TEXT NOT NULL, semester INTEGER NOT NULL CHECK(semester BETWEEN 1 AND 12), email TEXT NOT NULL UNIQUE, phone TEXT DEFAULT '');
+CREATE TABLE IF NOT EXISTS faculty (id TEXT PRIMARY KEY, name TEXT NOT NULL, department TEXT NOT NULL, email TEXT NOT NULL UNIQUE);
+CREATE TABLE IF NOT EXISTS courses (id TEXT PRIMARY KEY, name TEXT NOT NULL, department TEXT NOT NULL, semester INTEGER NOT NULL, faculty_id TEXT REFERENCES faculty(id) ON DELETE SET NULL);
+CREATE TABLE IF NOT EXISTS enrollments (student_id TEXT NOT NULL REFERENCES students(id) ON DELETE CASCADE, course_id TEXT NOT NULL REFERENCES courses(id) ON DELETE CASCADE, PRIMARY KEY(student_id,course_id));
+CREATE TABLE IF NOT EXISTS attendance (student_id TEXT NOT NULL, course_id TEXT NOT NULL, class_date TEXT NOT NULL, status TEXT NOT NULL CHECK(status IN ('Present','Absent')), PRIMARY KEY(student_id,course_id,class_date), FOREIGN KEY(student_id,course_id) REFERENCES enrollments(student_id,course_id) ON DELETE CASCADE);
+CREATE TABLE IF NOT EXISTS marks (student_id TEXT NOT NULL, course_id TEXT NOT NULL, assessment TEXT NOT NULL DEFAULT 'End Semester', internal INTEGER NOT NULL CHECK(internal BETWEEN 0 AND 40), external INTEGER NOT NULL CHECK(external BETWEEN 0 AND 60), PRIMARY KEY(student_id,course_id,assessment), FOREIGN KEY(student_id,course_id) REFERENCES enrollments(student_id,course_id) ON DELETE CASCADE);
+CREATE TABLE IF NOT EXISTS fees (id INTEGER PRIMARY KEY, student_id TEXT NOT NULL REFERENCES students(id) ON DELETE CASCADE, semester INTEGER NOT NULL, amount INTEGER NOT NULL CHECK(amount>=0), due_date TEXT NOT NULL, status TEXT NOT NULL CHECK(status IN ('Paid','Pending','Overdue')));
+CREATE TABLE IF NOT EXISTS timetable (id INTEGER PRIMARY KEY, course_id TEXT NOT NULL REFERENCES courses(id) ON DELETE CASCADE, day TEXT NOT NULL, start_time TEXT NOT NULL, end_time TEXT NOT NULL, room TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS idx_course_faculty ON courses(faculty_id);
+CREATE INDEX IF NOT EXISTS idx_attendance_course_date ON attendance(course_id,class_date);
+CREATE INDEX IF NOT EXISTS idx_fees_student ON fees(student_id);
+CREATE TABLE IF NOT EXISTS login_attempts (username TEXT NOT NULL, source_hash TEXT NOT NULL, attempted_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE INDEX IF NOT EXISTS idx_login_attempts_window ON login_attempts(username,attempted_at);
+CREATE TABLE IF NOT EXISTS audit_log (id INTEGER PRIMARY KEY, actor_id INTEGER, action TEXT NOT NULL, object_type TEXT NOT NULL, object_id TEXT NOT NULL, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE INDEX IF NOT EXISTS idx_audit_log_created ON audit_log(created_at);

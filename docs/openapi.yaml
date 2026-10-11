@@ -1,0 +1,101 @@
+openapi: 3.0.3
+info:
+  title: Student Information System API
+  version: 2.0.0
+  description: Versioned integration API for the Student Information System.
+servers:
+  - url: /api/v1
+security:
+  - bearerAuth: []
+paths:
+  /me:
+    get:
+      summary: Current API identity
+      responses:
+        '200': {description: Authenticated user}
+        '401': {description: Authentication required}
+  /dashboard:
+    get:
+      summary: Role-scoped dashboard metrics
+      responses:
+        '200': {description: Dashboard metrics}
+  /students:
+    get:
+      summary: List students visible to the authenticated user
+      parameters:
+        - {name: q, in: query, schema: {type: string}}
+      responses:
+        '200': {description: Student list}
+  /courses:
+    get:
+      summary: List courses visible to the authenticated user
+      responses:
+        '200': {description: Course list}
+  /attendance:
+    get:
+      summary: Read attendance records
+      parameters:
+        - {name: student_id, in: query, schema: {type: string}}
+      responses:
+        '200': {description: Attendance records}
+    post:
+      summary: Record attendance
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [course_id, class_date, entries]
+              properties:
+                course_id: {type: string}
+                class_date: {type: string, format: date}
+                entries:
+                  type: array
+                  items:
+                    type: object
+                    required: [student_id, status]
+                    properties:
+                      student_id: {type: string}
+                      status: {type: string, enum: [Present, Absent]}
+      responses:
+        '200': {description: Attendance saved}
+        '400': {description: Invalid request}
+        '403': {description: Course not accessible}
+  /marks:
+    get:
+      summary: Read marks
+      parameters:
+        - {name: student_id, in: query, schema: {type: string}}
+      responses:
+        '200': {description: Marks records}
+    post:
+      summary: Record end-semester marks
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [course_id, entries]
+              properties:
+                course_id: {type: string}
+                entries:
+                  type: array
+                  items:
+                    type: object
+                    required: [student_id, internal, external]
+                    properties:
+                      student_id: {type: string}
+                      internal: {type: integer, minimum: 0, maximum: 40}
+                      external: {type: integer, minimum: 0, maximum: 60}
+      responses:
+        '200': {description: Marks saved}
+        '400': {description: Invalid request}
+        '403': {description: Course not accessible}
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: SIS API token

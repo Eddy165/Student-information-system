@@ -1,0 +1,9 @@
+.git
+.github
+.venv
+instance
+__pycache__
+*.pyc
+.env
+.env.*
+!.env.production.example

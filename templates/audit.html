@@ -1,0 +1,6 @@
+{% extends 'base.html' %}{% block heading %}Audit Log{% endblock %}{% block content %}
+<div class="headingline"><div><p class="muted">Last 200 recorded administrative and academic changes.</p></div><a class="secondary" href="{{ url_for('admin_tools.analytics') }}">Analytics</a></div>
+<section class="panel tablewrap"><table><thead><tr><th>Time</th><th>Actor</th><th>Action</th><th>Object</th><th>Object ID</th></tr></thead><tbody>
+{% for row in records %}<tr><td>{{ row.created_at }}</td><td>{{ row.actor or 'system' }}</td><td><span class="badge">{{ row.action }}</span></td><td>{{ row.object_type }}</td><td>{{ row.object_id }}</td></tr>{% else %}<tr><td colspan="5" class="empty">No audit events yet.</td></tr>{% endfor %}
+</tbody></table></section>
+{% endblock %}

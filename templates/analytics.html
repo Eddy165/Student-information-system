@@ -1,0 +1,12 @@
+{% extends 'base.html' %}{% block heading %}Admin Analytics{% endblock %}{% block content %}
+<p class="muted">Operational snapshot of academic records and payment status.</p>
+<div class="stats stats-seven">
+{% for key,label in [('students','Students'),('faculty','Faculty'),('courses','Courses'),('enrollments','Enrollments'),('attendance','Attendance entries'),('marks','Marks entries'),('pending_fees','Pending fees')] %}
+<div class="stat"><small>{{ label }}</small><strong>{{ metrics[key] }}</strong></div>
+{% endfor %}
+</div>
+<div class="analytics-grid">
+<section class="panel"><h2>Attendance distribution</h2>{% for row in attendance %}<div class="bar-row"><span>{{ row.status }}</span><strong>{{ row.n }}</strong><div class="bar"><i style="width:{{ ((row.n / (metrics.attendance or 1))*100)|round(1) }}%"></i></div></div>{% else %}<p class="empty">No attendance data yet.</p>{% endfor %}</section>
+<section class="panel"><h2>Fee status</h2>{% for row in fees %}<div class="bar-row"><span>{{ row.status }}</span><strong>{{ row.n }}</strong><div class="bar"><i style="width:{{ ((row.n / ((metrics.pending_fees + row.n) or 1))*100)|round(1) }}%"></i></div></div>{% else %}<p class="empty">No fee data yet.</p>{% endfor %}</section>
+</div>
+{% endblock %}
